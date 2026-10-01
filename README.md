@@ -8,8 +8,6 @@ If you work with Claude Code, Codex, ChatGPT and several Orca terminals in paral
 
 ![JTM popover](docs/images/screenshot.png)
 
-<sub>The screenshot file is added separately: `docs/images/screenshot.png`.</sub>
-
 ## Features
 
 - **Automatic capture.** Hooks for Claude Code and Codex create and update a ticket for every interactive agent session, with no typing. The Orca poller adds agent terminals the hooks did not see.

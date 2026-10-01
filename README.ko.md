@@ -8,8 +8,6 @@ Claude Code, Codex, ChatGPT, 여러 개의 Orca 터미널을 한꺼번에 쓰다
 
 ![JTM 팝오버](docs/images/screenshot.png)
 
-<sub>스크린샷 파일은 따로 추가합니다: `docs/images/screenshot.png`.</sub>
-
 ## 기능
 
 - **자동 수집.** Claude Code와 Codex 훅이 대화형 에이전트 세션마다 티켓을 만들고 갱신합니다. 직접 입력할 필요가 없습니다. 훅이 놓친 에이전트 터미널은 Orca 폴러가 보충합니다.
@@ -18,7 +16,7 @@ Claude Code, Codex, ChatGPT, 여러 개의 Orca 터미널을 한꺼번에 쓰다
 - **수동 보강.** 자동 수집은 "어디서, 언제"를 채우고, 사람은 "왜, 다음에 뭘"을 채웁니다. 제목, 다음 할 일, 메모, 프로젝트를 고칠 수 있고, 고친 내용은 자동 수집이 덮어쓰지 않습니다.
 - **스스로 정리.** 손대지 않은 티켓은 세션이 끝나면 완료되고, 24시간 동안 활동이 없으면 보관함으로 갑니다. ⭐(유지)를 누르면 정리 대상에서 빠지고, 보관함에서 되살릴 수 있고, 세션을 무시해서 다시 생기지 않게 할 수도 있습니다.
 - **키보드 중심.** 전역 단축키 <kbd>⌥</kbd><kbd>⌘</kbd><kbd>J</kbd>, 열면 검색창에 포커스, 방향키와 Enter로 이동합니다.
-- **스크립트 가능.** 앱이 하는 일은 모두 `jtm` 명령줄로도 할 수 있고, 대부분의 명령이 `--json` 출력을 지원합니다.
+- **스크립트 가능.** 앱이 하는 일은 모두 `jtm` CLI로도 할 수 있고, 대부분의 명령이 `--json` 출력을 지원합니다.
 - **로컬 전용.** 서버, 계정, 원격 수집이 없습니다. [개인정보](#개인정보)를 참고하세요.
 
 ## 요구 사항
@@ -33,7 +31,7 @@ Claude Code, Codex, ChatGPT, 여러 개의 Orca 터미널을 한꺼번에 쓰다
 curl -fsSL https://raw.githubusercontent.com/hiphapis/jtm/main/scripts/install.sh | sh
 ```
 
-스크립트는 [GitHub Releases](https://github.com/hiphapis/jtm/releases)에서 최신 `JTM-<version>.zip`을 내려받아 `JTM.app`을 `~/Applications`에 설치하고, 명령줄 도구를 `~/.local/bin/jtm`에 연결합니다(앱 번들 안의 `Contents/Helpers/jtm`을 가리키는 심볼릭 링크이며, `~/.local/bin`이 `PATH`에 있어야 합니다). 이어서 Claude Code / Codex 훅을 설치할지 묻고(`[y/N]`, 묻지 않고 설치하려면 `curl -fsSL … | sh -s -- --yes`) 앱을 엽니다. 훅을 건너뛰었다면 앱을 처음 열 때 설정 카드 **"CLI와 훅 설치"**가 나타나고, 언제든 `jtm hooks install`로도 설치할 수 있습니다.
+스크립트는 [GitHub Releases](https://github.com/hiphapis/jtm/releases)에서 최신 `JTM-<version>.zip`을 내려받아 `JTM.app`을 `~/Applications`에 설치하고, CLI를 `~/.local/bin/jtm`에 연결합니다(앱 번들 안의 `Contents/Helpers/jtm`을 가리키는 심볼릭 링크이며, `~/.local/bin`이 `PATH`에 있어야 합니다). 이어서 Claude Code / Codex 훅을 설치할지 묻고(`[y/N]`, 묻지 않고 설치하려면 `curl -fsSL … | sh -s -- --yes`) 앱을 엽니다. 훅을 건너뛰었다면 앱을 처음 열 때 설정 카드 **"CLI와 훅 설치"**가 나타나고, 언제든 `jtm hooks install`로도 설치할 수 있습니다.
 
 ### Gatekeeper에 대해
 
@@ -50,7 +48,7 @@ JTM은 Apple Developer ID가 아니라 임시(ad-hoc) 서명이어서, 브라우
 | 무엇 | 어디 |
 | --- | --- |
 | 앱 | `~/Applications/JTM.app` |
-| 명령줄 도구 | `~/.local/bin/jtm` (앱 번들을 가리키는 심볼릭 링크) |
+| CLI | `~/.local/bin/jtm` (앱 번들을 가리키는 심볼릭 링크) |
 | Claude Code 훅 | `~/.claude/settings.json` |
 | Codex 훅 | `~/.codex/hooks.json` |
 | 데이터 | `~/Library/Application Support/jtm/jtm.sqlite` |
@@ -86,7 +84,7 @@ curl -fsSL https://raw.githubusercontent.com/hiphapis/jtm/main/scripts/uninstall
 
 > 앱 화면은 현재 **한국어만** 지원합니다. 영어 문구는 아직 없습니다.
 
-### 명령줄
+### CLI
 
 `jtm <명령> --help`로 각 명령의 설명을 볼 수 있습니다. 티켓 id는 `jtm ls`에 나오는 번호입니다.
 
@@ -155,7 +153,7 @@ scripts/build-app.sh --install   # 그 뒤 ~/Applications/JTM.app으로 복사 (
 
 그다음 `open ~/Applications/JTM.app`으로 앱을 실행합니다. 변경을 보내기 전에 [CONTRIBUTING.md](CONTRIBUTING.md)를 읽어 주세요.
 
-코드는 Swift 패키지 하나입니다: `JTMCore`(모델, SQLite 저장소, 수집, 이동 로직, Orca 동기화), `jtm`(명령줄 도구), `JTMApp`(SwiftUI/AppKit 메뉴바 앱). 에이전트 훅이 `jtm ingest`를 호출해 SQLite에 쓰고, 앱은 데이터베이스 파일을 감시해서 화면을 다시 그립니다.
+코드는 Swift 패키지 하나입니다: `JTMCore`(모델, SQLite 저장소, 수집, 이동 로직, Orca 동기화), `jtm`(CLI), `JTMApp`(SwiftUI/AppKit 메뉴바 앱). 에이전트 훅이 `jtm ingest`를 호출해 SQLite에 쓰고, 앱은 데이터베이스 파일을 감시해서 화면을 다시 그립니다.
 
 ## 라이선스
 
