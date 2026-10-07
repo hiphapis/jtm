@@ -86,12 +86,11 @@ chmod 755 "$APP/Contents/MacOS/JTMApp" "$APP/Contents/Helpers/jtm"
 cp "$ICON" "$APP/Contents/Resources/AppIcon.icns"
 # 화면 문구(영어 기본, 한국어)가 든 SwiftPM 리소스 번들. 앱 코드의 Bundle.module 이 Contents/Resources 에서 이 번들을 찾는다.
 # 없으면 문구가 키 이름으로 보이므로, 조립 전에 두 언어가 다 들어 있는지 확인하고 아니면 실패한다.
+# 번들 안쪽 레이아웃(중첩 또는 평평)은 SwiftPM 이 만든 그대로 복사한다. Bundle 이 둘 다 읽는다.
 RES_NAME="jtm_JTMAppCore.bundle"
 RES_BUNDLE="$BIN_DIR/$RES_NAME"
-for lang in en ko; do
-  [[ -f "$RES_BUNDLE/Contents/Resources/$lang.lproj/Localizable.strings" ]] \
-    || { echo "error: $RES_BUNDLE has no $lang.lproj/Localizable.strings (the localized strings are missing)" >&2; exit 1; }
-done
+RES_LAYOUT="$("$ROOT/scripts/check-resource-bundle.sh" "$RES_BUNDLE")"
+echo "==> resource bundle layout: $RES_LAYOUT"
 ditto "$RES_BUNDLE" "$APP/Contents/Resources/$RES_NAME"
 
 cat > "$APP/Contents/Info.plist" <<PLIST

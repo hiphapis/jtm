@@ -22,6 +22,43 @@ ICON="$ROOT/Resources/AppIcon/AppIcon.icns"
 # 이 Mac 의 아키텍처 하나만 빌드한다(유니버설 빌드는 릴리스 워크플로가 이미 한다).
 export JTM_ARCHS="$(uname -m)" JTM_DIST_DIR="$WORK/dist"
 
+echo "0) resource bundle check accepts the flat and the nested SwiftPM layout, rejects a bundle without ko"
+CHECK=scripts/check-resource-bundle.sh
+fake_bundle() { # <경로> <레이아웃: flat|nested> <언어...>
+  local dir="$1" layout="$2" lang root; shift 2
+  root="$dir"; [[ "$layout" == nested ]] && root="$dir/Contents/Resources"
+  mkdir -p "$root"
+  for lang in "$@"; do
+    mkdir -p "$root/$lang.lproj"
+    printf '"sectionWaiting" = "x";\n' > "$root/$lang.lproj/Localizable.strings"
+  done
+}
+fake_bundle "$WORK/fake/flat.bundle" flat en ko
+fake_bundle "$WORK/fake/nested.bundle" nested en ko
+[[ "$("$CHECK" "$WORK/fake/flat.bundle" 2>"$LOG")" == flat ]] || fail "a flat bundle was not accepted"
+[[ "$("$CHECK" "$WORK/fake/nested.bundle" 2>"$LOG")" == nested ]] || fail "a nested bundle was not accepted"
+# 컴파일된(바이너리 property list) 문구도 받아들인다.
+fake_bundle "$WORK/fake/binary.bundle" flat en ko
+plutil -convert binary1 "$WORK/fake/binary.bundle/en.lproj/Localizable.strings" "$WORK/fake/binary.bundle/ko.lproj/Localizable.strings"
+"$CHECK" "$WORK/fake/binary.bundle" >"$LOG" 2>&1 || fail "a bundle with compiled (binary) strings was not accepted"
+for layout in flat nested; do
+  fake_bundle "$WORK/fake/no-ko-$layout.bundle" "$layout" en
+  if "$CHECK" "$WORK/fake/no-ko-$layout.bundle" >"$LOG" 2>&1; then fail "a $layout bundle without ko was accepted"; fi
+  grep -q "the localized strings are missing" "$LOG" || fail "no loud error for a $layout bundle without ko"
+done
+# 한 레이아웃 안에 en 과 ko 가 다 있어야 한다: 평평에 en, 중첩에 ko 로 갈라진 번들은 거절한다.
+fake_bundle "$WORK/fake/split.bundle" flat en
+fake_bundle "$WORK/fake/split.bundle" nested ko
+if "$CHECK" "$WORK/fake/split.bundle" >"$LOG" 2>&1; then fail "a bundle with en and ko in different layouts was accepted"; fi
+# 비어 있거나 읽을 수 없는 문구 파일, 번들이 없는 경우도 거절한다.
+fake_bundle "$WORK/fake/empty.bundle" flat en ko
+: > "$WORK/fake/empty.bundle/ko.lproj/Localizable.strings"
+if "$CHECK" "$WORK/fake/empty.bundle" >"$LOG" 2>&1; then fail "a bundle with an empty ko strings file was accepted"; fi
+fake_bundle "$WORK/fake/garbage.bundle" nested en ko
+echo "not a property list {" > "$WORK/fake/garbage.bundle/Contents/Resources/en.lproj/Localizable.strings"
+if "$CHECK" "$WORK/fake/garbage.bundle" >"$LOG" 2>&1; then fail "a bundle with an unreadable en strings file was accepted"; fi
+if "$CHECK" "$WORK/fake/missing.bundle" >"$LOG" 2>&1; then fail "a missing bundle was accepted"; fi
+
 echo "1) a missing or invalid icon fails loudly, before any build"
 if JTM_ICON="$WORK/nope.icns" scripts/build-app.sh >"$LOG" 2>&1; then fail "build succeeded without an icon"; fi
 grep -q "app icon not found" "$LOG" || fail "no loud error for the missing icon"
@@ -42,7 +79,9 @@ APP="$ROOT/.build/JTM.app"
 [[ "$(plist CFBundleIconName)" == "AppIcon" ]] || fail "CFBundleIconName"
 [[ "$(plist CFBundleShortVersionString)" == "$VERSION" ]] || fail "version in Info.plist"
 cmp -s "$APP/Contents/Resources/AppIcon.icns" "$ICON" || fail "AppIcon.icns in the bundle differs from Resources/AppIcon/AppIcon.icns"
-RES_REL="Contents/Resources/jtm_JTMAppCore.bundle/Contents/Resources"
+RES_REL="Contents/Resources/jtm_JTMAppCore.bundle"
+# SwiftPM 이 만든 레이아웃 그대로 들어 있어야 한다(평평하면 번들 바로 아래, 아니면 Contents/Resources 아래).
+[[ -d "$APP/$RES_REL/en.lproj" ]] || RES_REL="$RES_REL/Contents/Resources"
 for lang in en ko; do
   [[ -s "$APP/$RES_REL/$lang.lproj/Localizable.strings" ]] || fail "the app lacks $lang.lproj/Localizable.strings (localized strings)"
 done
