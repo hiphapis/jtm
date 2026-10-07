@@ -32,6 +32,12 @@ public final class InMemorySetupPreferences: SetupPreferences, @unchecked Sendab
     }
 }
 
+/// 설정 카드가 보여 주는 Codex 신뢰 안내(요지 두 줄). CLI(`jtm hooks install`)가 찍는 `HookNotices.codexTrust`의 앞 두 줄과 같은 뜻이고,
+/// CLI 문구는 한국어로 두기 때문에 앱 화면용은 언어별로 따로 둔다(한국어는 그 두 줄과 글자까지 같다).
+public enum SetupNotices {
+    public static var codexTrust: [String] { [L10n.string(.setupCodexTrust1), L10n.string(.setupCodexTrust2)] }
+}
+
 /// 팝오버 맨 위 "CLI와 훅 설치" 카드의 상태와 동작. 파일을 만지는 일은 `CLISetup`이 하고, 여기서는 언제 보일지와 진행 상태만 정한다.
 @MainActor @Observable
 public final class SetupController {
@@ -115,7 +121,9 @@ public final class SetupController {
         isWorking = true
         defer { isWorking = false }
         let setup = setup
-        let outcome = await Task.detached(priority: .userInitiated) { work(setup) }.value
+        // 분리된 작업에는 작업 단위 언어 고정이 전해지지 않으므로 지금 언어를 들고 간다(결과 문구가 같은 언어로 나오게).
+        let language = L10n.current
+        let outcome = await Task.detached(priority: .userInitiated) { L10n.$language.withValue(language) { work(setup) } }.value
         lastAction = action
         result = outcome
         forced = false

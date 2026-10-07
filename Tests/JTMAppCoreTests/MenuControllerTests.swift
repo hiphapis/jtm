@@ -54,7 +54,7 @@ private func makeController(
     MenuController(backend: backend, sync: sync, clock: { epoch.addingTimeInterval(60) })
 }
 
-@MainActor @Suite struct MenuControllerTests {
+@MainActor @Suite(.korean) struct MenuControllerTests {
     @Test func reloadFillsTheStateAndTheBadge() async {
         let backend = FakeBackend()
         backend.listings = [listing(makeTicket(1, status: .waiting)), listing(makeTicket(2, status: .waiting)), listing(makeTicket(3))]
@@ -441,7 +441,7 @@ private func makeIgnoreController(_ backend: FakeBackend, gate: SleepGate) -> Me
     MenuController(backend: backend, clock: { epoch.addingTimeInterval(60) }, sleep: { try await gate.sleep($0) })
 }
 
-@MainActor @Suite struct RowButtonControllerTests {
+@MainActor @Suite(.korean) struct RowButtonControllerTests {
     private func waitUntil(_ condition: @autoclosure () -> Bool) async {
         for _ in 0..<400 where !condition() { try? await Task.sleep(for: .milliseconds(5)) }
     }
@@ -702,7 +702,7 @@ private func makeGuardedController(
         uptime: { uptime.now })
 }
 
-@MainActor @Suite struct IgnoreConfirmationTests {
+@MainActor @Suite(.korean) struct IgnoreConfirmationTests {
     private func waitUntil(_ condition: @autoclosure () -> Bool) async {
         for _ in 0..<400 where !condition() { try? await Task.sleep(for: .milliseconds(5)) }
     }

@@ -18,7 +18,7 @@ private final class TestClockApp: @unchecked Sendable {
     func advance(_ seconds: TimeInterval) { current = current.addingTimeInterval(seconds) }
 }
 
-@Suite struct DatabaseBackendTests {
+@Suite(.korean) struct DatabaseBackendTests {
     @Test func loadCreatesAMissingDatabaseAndReadsWhatOthersWrite() async throws {
         try await withTempDB { path in
             let backend = DatabaseBackend(databasePath: path)
@@ -153,7 +153,7 @@ private final class TestClockApp: @unchecked Sendable {
 
 // MARK: 끝에서 끝까지: 다른 프로세스의 쓰기 → 감시 → 다시 읽기 → 목록 상태
 
-@MainActor @Suite(.serialized) struct EndToEndReloadTests {
+@MainActor @Suite(.serialized, .korean) struct EndToEndReloadTests {
     /// `jtm add`/훅과 같은 방식(별도 커넥션이 커밋)으로 쓰고, 컨트롤러의 상태와 배지가 바뀔 때까지의 시간을 잰다. 인수 기준: < 1초.
     @Test func aWriteFromAnotherConnectionReachesTheBadgeWellUnderOneSecond() async throws {
         try await withTempDB { path in

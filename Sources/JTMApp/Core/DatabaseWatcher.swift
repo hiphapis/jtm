@@ -54,7 +54,7 @@ public final class DatabaseWatcher: @unchecked Sendable {
             timer.schedule(
                 deadline: .now() + self.options.pollInterval, repeating: self.options.pollInterval,
                 leeway: .milliseconds(Int(self.options.pollInterval * 250)))
-            timer.setEventHandler { [weak self] in
+            timer.setEventHandler { [weak self = self] in  // 바깥 클로저가 self를 강하게 잡고 있어도 이 핸들러는 약하게 잡는다
                 self?.arm()
                 self?.checkVersion(notify: true)
             }

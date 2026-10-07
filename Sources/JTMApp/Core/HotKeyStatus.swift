@@ -21,8 +21,8 @@ public enum HotKeyStatus: Equatable, Sendable {
         case .registered: nil
         case .failed(let label, let code):
             code == Self.existsError
-                ? "\(label) 단축키를 다른 앱이 이미 쓰고 있어요"
-                : "\(label) 단축키를 등록하지 못했어요 (코드 \(code))"
+                ? L10n.string(.hotKeyTaken, label)
+                : L10n.string(.hotKeyFailed, label, code)
         }
     }
 }

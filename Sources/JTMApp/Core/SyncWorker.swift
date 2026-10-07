@@ -25,9 +25,9 @@ public enum SyncOutcome: Equatable, Sendable {
     public var footerNotice: String? {
         switch self {
         case .synced: nil
-        case .orcaUnavailable: "Orca 연결 안 됨"
-        case .failed: "동기화 실패"
-        case .busy: "동기화 중…"
+        case .orcaUnavailable: L10n.string(.syncOrcaUnavailable)
+        case .failed: L10n.string(.syncFailed)
+        case .busy: L10n.string(.syncBusy)
         }
     }
 }

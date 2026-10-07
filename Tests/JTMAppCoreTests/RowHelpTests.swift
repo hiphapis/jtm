@@ -4,7 +4,7 @@ import Testing
 @testable import JTMAppCore
 @testable import JTMCore
 
-@Suite struct RowHelpTests {
+@Suite(.korean) struct RowHelpTests {
     @Test func everyDestinationKindHasATooltipThatSaysWhatClickingDoes() {
         for kind in LocationKind.allCases {
             #expect(kind.helpText.contains("—") && kind.helpText.hasPrefix(kind.displayName), "\(kind)")

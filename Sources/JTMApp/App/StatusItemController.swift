@@ -63,7 +63,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate, NSWindowDelegate 
         let count = controller.badgeCount
         button.title = count > 0 ? " \(count)" : ""
         button.imagePosition = count > 0 ? .imageLeading : .imageOnly
-        button.setAccessibilityLabel(count > 0 ? "JTM, 내 입력 대기 \(count)개" : "JTM")
+        button.setAccessibilityLabel(count > 0 ? L10n.string(.statusItemWaiting, count) : "JTM")
     }
 
     /// `MenuController`는 `@Observable`이지만 AppKit은 구독하지 못한다: 관찰을 이어 걸며 배지를 갱신한다.

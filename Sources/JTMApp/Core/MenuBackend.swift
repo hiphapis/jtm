@@ -163,7 +163,7 @@ public final class DatabaseBackend: MenuBackend, @unchecked Sendable {
                 return GoOutcome(ok: result.ok, message: result.message, copiedToClipboard: result.copiedToClipboard)
             }
         } catch ResolveError.noLocations {
-            return GoOutcome(ok: false, message: "이동할 위치가 없어요")
+            return GoOutcome(ok: false, message: L10n.string(.noDestination))
         } catch {
             return GoOutcome(ok: false, message: "\(error)")
         }

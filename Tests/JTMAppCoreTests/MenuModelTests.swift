@@ -3,7 +3,7 @@ import Testing
 @testable import JTMAppCore
 @testable import JTMCore
 
-@Suite struct MenuModelTests {
+@Suite(.korean) struct MenuModelTests {
     private let now = epoch.addingTimeInterval(3_600)
 
     private func state(_ listings: [TicketListing]) -> MenuState {
@@ -182,7 +182,7 @@ import Testing
     // MARK: Relative time
 
     @Test func koreanRelativeTime() {
-        func ago(_ seconds: TimeInterval) -> String { RelativeTimeKo.string(from: epoch, now: epoch.addingTimeInterval(seconds)) }
+        func ago(_ seconds: TimeInterval) -> String { AppRelativeTime.string(from: epoch, now: epoch.addingTimeInterval(seconds)) }
         #expect(ago(0) == "방금")
         #expect(ago(59) == "방금")
         #expect(ago(60) == "1분 전")
@@ -194,7 +194,7 @@ import Testing
     }
 }
 
-@Suite struct ArchiveModelTests {
+@Suite(.korean) struct ArchiveModelTests {
     private let now = epoch.addingTimeInterval(3_600)
 
     private func state(_ listings: [TicketListing]) -> MenuState {

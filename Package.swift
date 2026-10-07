@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "jtm",
+    defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     products: [
         .library(name: "JTMCore", targets: ["JTMCore"]),
@@ -24,7 +25,8 @@ let package = Package(
             ]
         ),
         // 메뉴바 앱의 테스트 가능한 부분(뷰모델, DB 감시, 동기화 게이트). AppKit/SwiftUI 뷰는 JTMApp에만 둔다.
-        .target(name: "JTMAppCore", dependencies: ["JTMCore"], path: "Sources/JTMApp/Core"),
+        // 화면 문구(영어 기본, 한국어)는 Resources/{en,ko}.lproj에 있고 Bundle.module로 읽는다. build-app.sh가 이 리소스 번들을 앱에 복사한다.
+        .target(name: "JTMAppCore", dependencies: ["JTMCore"], path: "Sources/JTMApp/Core", resources: [.process("Resources")]),
         // 팝오버/패널 본문(SwiftUI). 앱과 진단 도구가 함께 쓴다(실행 타깃끼리는 import할 수 없어서 라이브러리로 뺐다).
         .target(name: "JTMAppUI", dependencies: ["JTMAppCore", "JTMCore"], path: "Sources/JTMApp/UI"),
         .executableTarget(name: "JTMApp", dependencies: ["JTMAppUI", "JTMAppCore", "JTMCore"], path: "Sources/JTMApp/App"),

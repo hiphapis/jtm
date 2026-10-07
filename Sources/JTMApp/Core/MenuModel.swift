@@ -7,12 +7,12 @@ public enum MenuSection: Int, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .waiting: "내 입력 대기"
-        case .active: "진행 중"
-        case .inbox: "Inbox"
-        case .blocked: "Blocked"
-        case .done: "최근 완료"
-        case .archive: "보관함"
+        case .waiting: L10n.string(.sectionWaiting)
+        case .active: L10n.string(.sectionActive)
+        case .inbox: L10n.string(.sectionInbox)
+        case .blocked: L10n.string(.sectionBlocked)
+        case .done: L10n.string(.sectionDone)
+        case .archive: L10n.string(.sectionArchive)
         }
     }
 
@@ -42,10 +42,10 @@ extension WaitingReason {
     /// 대기 이유 표시(권한/턴 종료/멈춤/오류).
     public var label: String {
         switch self {
-        case .permission: "권한"
-        case .turnEnd: "턴 종료"
-        case .stale: "멈춤"
-        case .error: "오류"
+        case .permission: L10n.string(.reasonLabelPermission)
+        case .turnEnd: L10n.string(.reasonLabelTurnEnd)
+        case .stale: L10n.string(.reasonLabelStale)
+        case .error: L10n.string(.reasonLabelError)
         }
     }
 }
@@ -64,15 +64,15 @@ extension LocationKind {
     }
 }
 
-/// 한국어 상대 시간: 방금 · N분 전 · N시간 전 · N일 전.
-public enum RelativeTimeKo {
+/// 현재 언어의 상대 시간: 영어는 just now · 5m ago · 3h ago · 2d ago, 한국어는 방금 · N분 전 · N시간 전 · N일 전.
+public enum AppRelativeTime {
     public static func string(from date: Date, now: Date) -> String {
         let seconds = Int(now.timeIntervalSince(date))
         switch seconds {
-        case ..<60: return "방금"
-        case ..<3_600: return "\(seconds / 60)분 전"
-        case ..<86_400: return "\(seconds / 3_600)시간 전"
-        default: return "\(seconds / 86_400)일 전"
+        case ..<60: return L10n.string(.timeJustNow)
+        case ..<3_600: return L10n.string(.timeMinutes, seconds / 60)
+        case ..<86_400: return L10n.string(.timeHours, seconds / 3_600)
+        default: return L10n.string(.timeDays, seconds / 86_400)
         }
     }
 }
@@ -123,24 +123,24 @@ public struct MenuRow: Identifiable, Equatable, Sendable {
     /// 이 행에 보이는 버튼들(오른쪽, 왼쪽에서 오른쪽 순서). 보관함 행은 "되살리기" 하나다.
     public var actions: [RowAction] { archived ? [.restore] : [.keep, .editNextAction, .done, .ignore] }
 
-    public func ago(now: Date) -> String { RelativeTimeKo.string(from: lastActivityAt, now: now) }
+    public func ago(now: Date) -> String { AppRelativeTime.string(from: lastActivityAt, now: now) }
 
     /// VoiceOver가 행 하나를 읽는 문장: 제목, 프로젝트, 상태/이유, 목적지, 경과 시간, next_action, 유지 여부.
     /// 행 하나가 VoiceOver에는 한 요소라서, 행 버튼과 같은 동작이 VoiceOver 동작 목록으로도 나온다(`actions`).
     public func accessibilityLabel(now: Date) -> String {
         var parts = [title]
-        if let project { parts.append("프로젝트 \(project)") }
+        if let project { parts.append(L10n.string(.rowProject, project)) }
         if status == .waiting {
-            parts.append(waitingReason.map { "입력 대기, \($0.displayName)" } ?? "입력 대기")
+            parts.append(waitingReason.map { L10n.string(.rowWaitingReason, $0.displayName) } ?? L10n.string(.rowWaiting))
         } else if archived {
-            parts.append("보관함")
+            parts.append(L10n.string(.sectionArchive))
         } else {
             parts.append(status.displayName)
         }
-        parts.append(destination?.displayName ?? "이동할 위치 없음")
+        parts.append(destination?.displayName ?? L10n.string(.rowNoDestination))
         parts.append(ago(now: now))
-        if let nextAction { parts.append("next_action \(nextAction)") }
-        if kept { parts.append("유지함") }
+        if let nextAction { parts.append(L10n.string(.rowNextAction, nextAction)) }
+        if kept { parts.append(L10n.string(.rowKept)) }
         return parts.joined(separator: ", ")
     }
 }

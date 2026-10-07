@@ -1,7 +1,7 @@
 import Testing
 @testable import JTMAppCore
 
-@Suite struct HotKeyStatusTests {
+@Suite(.korean) struct HotKeyStatusTests {
     @Test func aRegisteredShortcutShowsItsLabelAndNoProblem() {
         let status = HotKeyStatus.registered(label: "⌥⌘J")
         #expect(status.label == "⌥⌘J" && status.problem == nil)

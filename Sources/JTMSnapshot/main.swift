@@ -13,6 +13,7 @@ import SwiftUI
 // `--setup`은 첫 실행 카드("CLI와 훅 설치")가 맨 위에 보이는 모습이고, `--setup-done`은 [설치]를 누른 뒤의 결과 카드다.
 // 둘 다 임시 HOME(`~/.claude`, `~/.codex` 폴더만 있는)과 가짜 번들 안 jtm으로 진짜 설치 코드를 돌린다: 진짜 홈은 건드리지 않는다.
 // `--confirm`은 선택한 행(⭐/next_action/note가 있어야 한다)에서 🗑을 한 번 눌러 "정말 지울까요?"를 묻는 모습이다.
+// `--lang en|ko`는 화면 언어를 고정한다(기본은 시스템 언어). `--seed`의 티켓 제목도 그 언어로 쓴다.
 
 func fail(_ message: String) -> Never {
     FileHandle.standardError.write(Data((message + "\n").utf8))
@@ -21,7 +22,7 @@ func fail(_ message: String) -> Never {
 
 let arguments = Array(CommandLine.arguments.dropFirst())
 guard let output = arguments.first(where: { !$0.hasPrefix("--") }) else {
-    fail("usage: JTM_DB_PATH=<db> JTMSnapshot <out.png> [--hidden]")
+    fail("usage: JTM_DB_PATH=<db> JTMSnapshot <out.png> [--lang en|ko] [--hidden]")
 }
 guard let databasePath = ProcessInfo.processInfo.environment["JTM_DB_PATH"], !databasePath.isEmpty else {
     fail("JTM_DB_PATH is required (this tool never touches the real database)")
@@ -37,6 +38,12 @@ let showSetupDone = arguments.contains("--setup-done")
 let showSetup = arguments.contains("--setup") || showSetupDone
 let selectIndex = arguments.firstIndex(of: "--select").flatMap { index in
     arguments.indices.contains(index + 1) ? Int(arguments[index + 1]) : nil
+}
+if let index = arguments.firstIndex(of: "--lang") {
+    guard arguments.indices.contains(index + 1), let language = AppLanguage(rawValue: arguments[index + 1]) else {
+        fail("--lang needs one of: \(AppLanguage.allCases.map(\.rawValue).joined(separator: ", "))")
+    }
+    L10n.setProcessLanguage(language)  // 컨트롤러와 뷰를 만들기 전에 고정한다
 }
 let height = arguments.firstIndex(of: "--height").flatMap { index in
     arguments.indices.contains(index + 1) ? Double(arguments[index + 1]) : nil

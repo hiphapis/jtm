@@ -134,7 +134,7 @@ public struct CLISetup: Sendable {
     public func install(now: Date = Date()) -> SetupResult {
         var result = SetupResult()
         guard let helperPath else {
-            result.error = "이 앱에는 내장 jtm이 없어요. 설치된 JTM.app으로 실행해 주세요."
+            result.error = L10n.string(.setupNoHelper)
             return result
         }
 
@@ -156,13 +156,13 @@ public struct CLISetup: Sendable {
         }
 
         if plans.isEmpty {
-            result.lines.append("Claude Code(~/.claude)와 Codex(~/.codex) 폴더가 없어서 훅은 설치하지 않았어요.")
+            result.lines.append(L10n.string(.setupNoAgentFolders))
         }
         for index in plans.indices {
             var plan = plans[index]
             let name = Self.agentName(plan.agent)
             if plan.isNoop {
-                result.lines.append("\(name) 훅은 이미 설치돼 있어요.")
+                result.lines.append(L10n.string(.setupResultAlready, name))
                 continue
             }
             do {
@@ -171,8 +171,8 @@ public struct CLISetup: Sendable {
                 result.error = "\(error)"
                 return result
             }
-            var line = "\(name) 훅을 설치했어요 (\(display(plan.path)))"
-            if let backup = plan.backupPath { line += " — 백업: \(display(backup))" }
+            var line = L10n.string(.setupResultInstalled, name, display(plan.path))
+            if let backup = plan.backupPath { line += L10n.string(.setupResultBackup, display(backup)) }
             result.lines.append(line)
             if plan.agent == .codex, plan.written { result.wroteCodexHooks = true }
         }
@@ -182,7 +182,7 @@ public struct CLISetup: Sendable {
     private func installLink(to helperPath: String, now: Date, into result: inout SetupResult) throws {
         let state = linkState()
         if state == .ok {
-            result.lines.append("\(display(linkPath))는 이미 이 앱의 jtm을 가리켜요.")
+            result.lines.append(L10n.string(.setupResultLinkAlready, display(linkPath)))
             return
         }
         try fileManager.createDirectory(atPath: linkDirectory, withIntermediateDirectories: true)
@@ -190,7 +190,7 @@ public struct CLISetup: Sendable {
             // 예전에 복사해 둔 jtm 같은 파일은 지우지 않고 옆으로 치운다.
             let backup = HookInstaller.uniqueBackupPath(for: linkPath, now: now)
             try fileManager.moveItem(atPath: linkPath, toPath: backup)
-            result.lines.append("기존 \(display(linkPath)) 파일은 \(display(backup))로 옮겼어요.")
+            result.lines.append(L10n.string(.setupResultMoved, display(linkPath), display(backup)))
         }
         // 임시 링크를 만든 뒤 rename으로 바꿔 끼운다(중간에 링크가 없는 순간이 없다).
         let temp = linkDirectory + "/.jtm.link-\(UUID().uuidString)"
@@ -200,7 +200,7 @@ public struct CLISetup: Sendable {
             try? fileManager.removeItem(atPath: temp)
             throw CocoaError(.fileWriteUnknown, userInfo: [NSLocalizedDescriptionKey: message])
         }
-        result.lines.append("\(display(linkPath)) → 이 앱의 jtm에 연결했어요.")
+        result.lines.append(L10n.string(.setupResultLinked, display(linkPath)))
     }
 
     // MARK: Uninstall hooks
@@ -221,7 +221,7 @@ public struct CLISetup: Sendable {
             var plan = plans[index]
             let name = Self.agentName(plan.agent)
             if plan.isNoop {
-                result.lines.append("\(name): 제거할 jtm 훅이 없어요.")
+                result.lines.append(L10n.string(.setupResultNothingToRemove, name))
                 continue
             }
             do {
@@ -230,8 +230,8 @@ public struct CLISetup: Sendable {
                 result.error = "\(error)"
                 return result
             }
-            var line = "\(name) 훅을 제거했어요 (\(display(plan.path)))"
-            if let backup = plan.backupPath { line += " — 백업: \(display(backup))" }
+            var line = L10n.string(.setupResultRemoved, name, display(plan.path))
+            if let backup = plan.backupPath { line += L10n.string(.setupResultBackup, display(backup)) }
             result.lines.append(line)
         }
         return result

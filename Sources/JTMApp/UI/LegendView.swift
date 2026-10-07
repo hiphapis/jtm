@@ -8,23 +8,23 @@ struct LegendView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("아이콘과 상태 설명").font(.headline)
+                Text(L10n.string(.legendTitle)).font(.headline)
                 Spacer()
                 Button(action: close) { Image(systemName: "xmark.circle.fill") }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
-                    .help("범례 닫기 (Esc)")
-                    .accessibilityLabel("범례 닫기")
+                    .help(L10n.string(.legendCloseHelp))
+                    .accessibilityLabel(L10n.string(.legendCloseLabel))
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    block("왼쪽 아이콘 — 어디로 이동하나", Legend.destinations)
-                    block("상태와 이유", Legend.statuses)
-                    block("행 오른쪽 버튼", Legend.actions)
-                    Text("유지(⭐)가 아닌 티켓은 세션이 끝나면 완료로, 24시간 동안 활동이 없으면 보관함으로 가요.")
+                    block(L10n.string(.legendDestinations), Legend.destinations)
+                    block(L10n.string(.legendStatuses), Legend.statuses)
+                    block(L10n.string(.legendButtons), Legend.actions)
+                    Text(L10n.string(.legendFootnote))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)

@@ -86,7 +86,7 @@ Start at login can also be switched from a terminal: `open -a JTM --args --login
 
 Always start the app with `open -a JTM` (or Finder, Spotlight, login items). Do not run the executable inside the app bundle from a terminal: macOS then remembers the menu bar item as hidden and later launches can exit immediately.
 
-> The app's interface is currently **Korean only**. English strings are not available yet.
+> The app's interface is available in **English and Korean** and follows the macOS language setting: Korean on a Mac whose preferred language is Korean, English otherwise. The `jtm` command line (help and messages) is still Korean.
 
 ### Command line
 

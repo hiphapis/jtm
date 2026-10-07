@@ -84,6 +84,15 @@ cp "$BIN_DIR/JTMApp" "$APP/Contents/MacOS/JTMApp"
 cp "$BIN_DIR/jtm" "$APP/Contents/Helpers/jtm"
 chmod 755 "$APP/Contents/MacOS/JTMApp" "$APP/Contents/Helpers/jtm"
 cp "$ICON" "$APP/Contents/Resources/AppIcon.icns"
+# 화면 문구(영어 기본, 한국어)가 든 SwiftPM 리소스 번들. 앱 코드의 Bundle.module 이 Contents/Resources 에서 이 번들을 찾는다.
+# 없으면 문구가 키 이름으로 보이므로, 조립 전에 두 언어가 다 들어 있는지 확인하고 아니면 실패한다.
+RES_NAME="jtm_JTMAppCore.bundle"
+RES_BUNDLE="$BIN_DIR/$RES_NAME"
+for lang in en ko; do
+  [[ -f "$RES_BUNDLE/Contents/Resources/$lang.lproj/Localizable.strings" ]] \
+    || { echo "error: $RES_BUNDLE has no $lang.lproj/Localizable.strings (the localized strings are missing)" >&2; exit 1; }
+done
+ditto "$RES_BUNDLE" "$APP/Contents/Resources/$RES_NAME"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -91,6 +100,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <plist version="1.0">
 <dict>
   <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleLocalizations</key><array><string>en</string><string>ko</string></array>
   <key>CFBundleExecutable</key><string>JTMApp</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundleIconName</key><string>AppIcon</string>
@@ -109,9 +119,10 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 plutil -lint "$APP/Contents/Info.plist"
 
-# 안쪽 실행 파일을 먼저, 그 다음 앱 전체를 서명한다(바깥을 먼저 하면 안쪽 서명이 봉인을 깬다).
-echo "==> codesign (ad-hoc): helper first, then the app"
+# 안쪽(내장 CLI, 문구 리소스 번들)을 먼저, 그 다음 앱 전체를 서명한다(바깥을 먼저 하면 안쪽 서명이 봉인을 깬다).
+echo "==> codesign (ad-hoc): helper and resource bundle first, then the app"
 codesign -s - --force -i "$BUNDLE_ID.cli" "$APP/Contents/Helpers/jtm"
+codesign -s - --force "$APP/Contents/Resources/$RES_NAME"
 codesign -s - --force "$APP"
 codesign --verify --deep --strict "$APP"
 

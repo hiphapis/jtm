@@ -107,7 +107,7 @@ private func makeSandbox(agents: Set<HookAgent>) throws -> (Sandbox, () -> Void)
     }
 }
 
-@Suite struct SetupInstallTests {
+@Suite(.korean) struct SetupInstallTests {
     @Test func installLinksTheCLIAndWritesHooksWithTheStableLinkPath() throws {
         try withSandbox { box in
             let existing = #"{"theme":"dark","hooks":{"Stop":[{"hooks":[{"type":"command","command":"echo mine"}]}]}}"#
@@ -215,7 +215,7 @@ private func makeSandbox(agents: Set<HookAgent>) throws -> (Sandbox, () -> Void)
     }
 }
 
-@MainActor @Suite struct SetupControllerTests {
+@MainActor @Suite(.korean) struct SetupControllerTests {
     private func controller(_ box: Sandbox, preferences: InMemorySetupPreferences = .init(), helper: Bool = true) -> SetupController {
         SetupController(setup: box.setup(helper: helper), preferences: preferences)
     }

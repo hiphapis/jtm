@@ -260,16 +260,16 @@ public final class MenuController {
         let generation = openGeneration
         state.select(id, now: now)
         editing = nil
-        feedback = Feedback(ticketId: id, message: "이동 중…", isError: false)
+        feedback = Feedback(ticketId: id, message: L10n.string(.feedbackGoing), isError: false)
         let outcome = await backend.go(id: id)
         if outcome.ok && !outcome.copiedToClipboard {
             feedback = nil
             // 이동하는 동안 사용자가 팝오버를 닫았다 다시 열었으면 새 팝오버는 그대로 둔다.
             if isOpen && generation == openGeneration { closePopover() }
         } else if outcome.copiedToClipboard {
-            showFeedback(Feedback(ticketId: id, message: "재개 명령을 클립보드에 복사했어요", isError: false))
+            showFeedback(Feedback(ticketId: id, message: L10n.string(.feedbackCopied), isError: false))
         } else {
-            showFeedback(Feedback(ticketId: id, message: "이동하지 못했어요: \(Self.shorten(outcome.message))", isError: true))
+            showFeedback(Feedback(ticketId: id, message: L10n.string(.feedbackGoFailed, Self.shorten(outcome.message)), isError: true))
         }
         await reload()
     }
@@ -443,7 +443,7 @@ public final class MenuController {
         // (`updated_at`은 훅이 계속 바꾸므로 보지 않고, 사용자가 챙긴 표지만 본다.)
         if !pending.wasProtected, state.listing(id: id)?.ticket.needsIgnoreConfirmation == true {
             state.unhide(id, now: now)
-            feedback = Feedback(ticketId: id, message: "무시하지 않았어요 — 그 사이 티켓이 수정됐어요", isError: false)
+            feedback = Feedback(ticketId: id, message: L10n.string(.feedbackNotIgnored), isError: false)
             return
         }
         do {
@@ -452,7 +452,7 @@ public final class MenuController {
             // 그 사이 다른 곳(CLI)에서 이미 지웠다: 원하던 결과다.
         } catch {
             state.unhide(id, now: now)
-            feedback = Feedback(ticketId: id, message: "무시하지 못했어요: \(error)", isError: true)
+            feedback = Feedback(ticketId: id, message: L10n.string(.feedbackIgnoreFailed, "\(error)"), isError: true)
         }
         await reload()
     }
@@ -462,7 +462,7 @@ public final class MenuController {
             try await work()
             feedback = nil
         } catch {
-            feedback = Feedback(ticketId: id, message: "저장하지 못했어요: \(error)", isError: true)
+            feedback = Feedback(ticketId: id, message: L10n.string(.feedbackSaveFailed, "\(error)"), isError: true)
         }
         await reload()
     }

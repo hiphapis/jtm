@@ -51,7 +51,7 @@ public struct MenuContentView: View {
         HStack(spacing: 6) {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
             TextField(
-                "제목, 프로젝트, next_action 검색",
+                L10n.string(.searchPlaceholder),
                 text: Binding(get: { controller.state.query }, set: { controller.setQuery($0) })
             )
             .textFieldStyle(.plain)
@@ -85,16 +85,16 @@ public struct MenuContentView: View {
     /// ⌘⌫는 글자 입력 중에는 먹지 않는다(검색어나 편집 중인 글을 줄 처음까지 지우는 기본 동작을 가로채 티켓을 지우면 안 된다).
     private var shortcuts: some View {
         Group {
-            Button("완료") { Task { await controller.markDoneSelected() } }
+            Button(L10n.string(.actionDone)) { Task { await controller.markDoneSelected() } }
                 .keyboardShortcut("d", modifiers: .command)
-            Button("next_action 편집") { controller.beginEdit(.nextAction) }
+            Button(L10n.string(.actionEditNextAction)) { controller.beginEdit(.nextAction) }
                 .keyboardShortcut("e", modifiers: .command)
-            Button("유지 토글") { Task { await controller.toggleKeepSelected() } }
+            Button(L10n.string(.shortcutToggleKeep)) { Task { await controller.toggleKeepSelected() } }
                 .keyboardShortcut("s", modifiers: .command)
-            Button("무시") { controller.ignoreSelected() }
+            Button(L10n.string(.actionIgnore)) { controller.ignoreSelected() }
                 .keyboardShortcut(.delete, modifiers: .command)
                 .disabled(controller.editing != nil || !controller.state.trimmedQuery.isEmpty)
-            Button("되살리기") { Task { await controller.restoreSelected() } }
+            Button(L10n.string(.actionRestore)) { Task { await controller.restoreSelected() } }
                 .keyboardShortcut("r", modifiers: .command)
         }
         .opacity(0)
@@ -108,7 +108,7 @@ public struct MenuContentView: View {
         let sections = controller.sections
         if sections.isEmpty {
             Spacer()
-            Text(controller.state.trimmedQuery.isEmpty ? "티켓이 없어요" : "일치하는 티켓이 없어요")
+            Text(L10n.string(controller.state.trimmedQuery.isEmpty ? .emptyNone : .emptyNoMatch))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
             Spacer()
@@ -215,7 +215,7 @@ struct TicketRowView: View {
 
     @ViewBuilder private var titleLine: some View {
         if let editing, editing.field == .title {
-            editor("제목", text: editing.draft)
+            editor(L10n.string(.promptTitle), text: editing.draft)
         } else {
             HStack(spacing: 6) {
                 // 상태칩과 시간은 줄어들거나 줄바꿈하지 않는다(fixedSize). 나머지 폭은 전부 제목이 쓴다
@@ -242,7 +242,7 @@ struct TicketRowView: View {
 
     @ViewBuilder private var secondLine: some View {
         if let editing, editing.field == .nextAction {
-            editor("next_action", text: editing.draft)
+            editor(L10n.string(.promptNextAction), text: editing.draft)
         } else if row.project != nil || row.nextAction != nil {
             // "[project] · next_action". 프로젝트만 있거나 next_action만 있으면 그것만, 둘 다 없으면 줄 자체가 없다.
             // 프로젝트는 최대 120pt(넘으면 가운데를 줄인다), 나머지 폭은 next_action이 쓴다.
@@ -296,8 +296,8 @@ struct TicketRowView: View {
                     Image(systemName: "xmark").font(.system(size: 10, weight: .semibold)).frame(width: 22, height: 22)
                 }
                 .buttonStyle(RowIconButtonStyle())
-                .help("취소 (Esc)")
-                .accessibilityLabel("취소")
+                .help(L10n.string(.cancelHelp))
+                .accessibilityLabel(L10n.string(.cancelLabel))
             } else if row.archived {
                 Button { act(.restore) } label: {
                     Label(RowAction.restore.label, systemImage: RowAction.restore.symbolName())
@@ -363,7 +363,7 @@ struct TicketRowView: View {
         if row.archived {
             Button(RowAction.restore.label) { act(.restore) }
         } else {
-            Button(row.kept ? "유지 해제" : "유지") { act(.keep) }
+            Button(L10n.string(row.kept ? .menuKeepOn : .actionKeep)) { act(.keep) }
             Button(RowAction.editNextAction.label) { act(.editNextAction) }
             if row.status != .done { Button(RowAction.done.label) { act(.done) } }
             Button(confirming ? RowAction.ignoreConfirmLabel : RowAction.ignore.label) { act(.ignore) }
@@ -371,41 +371,31 @@ struct TicketRowView: View {
     }
 
     @ViewBuilder private var contextMenu: some View {
-        Button("이동") { Task { await controller.activate(row.id) } }
+        Button(L10n.string(.menuGo)) { Task { await controller.activate(row.id) } }
         Divider()
         if row.archived {
             Button(RowAction.restore.label) { act(.restore) }
                 .keyboardShortcut("r", modifiers: .command)
         } else {
             if row.status != .done {
-                Button("완료") { Task { await controller.setStatus(row.id, .done) } }
+                Button(L10n.string(.actionDone)) { Task { await controller.setStatus(row.id, .done) } }
                     .keyboardShortcut("d", modifiers: .command)
             }
-            Button(row.kept ? "유지 해제" : "유지(⭐)") { act(.keep) }
+            Button(L10n.string(row.kept ? .menuKeepOn : .menuKeepOff)) { act(.keep) }
                 .keyboardShortcut("s", modifiers: .command)
         }
-        Menu("상태 변경") {
+        Menu(L10n.string(.menuChangeStatus)) {
             ForEach(TicketStatus.allCases.filter { $0 != row.status }, id: \.self) { status in
-                Button(Self.statusName(status)) { Task { await controller.setStatus(row.id, status) } }
+                Button(status.displayName) { Task { await controller.setStatus(row.id, status) } }
             }
         }
-        Button("next_action 편집") { controller.beginEdit(.nextAction, id: row.id) }
+        Button(L10n.string(.actionEditNextAction)) { controller.beginEdit(.nextAction, id: row.id) }
             .keyboardShortcut("e", modifiers: .command)
-        Button("제목 편집 (고정됨)") { controller.beginEdit(.title, id: row.id) }
+        Button(L10n.string(.menuEditTitle)) { controller.beginEdit(.title, id: row.id) }
         if !row.archived {
             Divider()
-            Button(confirming ? RowAction.ignoreConfirmLabel : "무시…", role: .destructive) { act(.ignore) }
+            Button(confirming ? RowAction.ignoreConfirmLabel : L10n.string(.menuIgnore), role: .destructive) { act(.ignore) }
                 .keyboardShortcut(.delete, modifiers: .command)
-        }
-    }
-
-    private static func statusName(_ status: TicketStatus) -> String {
-        switch status {
-        case .waiting: "내 입력 대기"
-        case .active: "진행 중"
-        case .inbox: "Inbox"
-        case .blocked: "Blocked"
-        case .done: "완료"
         }
     }
 }
@@ -415,18 +405,18 @@ struct TicketRowView: View {
 struct FooterView: View {
     let host: MenuHost
 
-    static let hiddenIconHint = "메뉴바 아이콘이 숨겨져 있어요 — 시스템 설정 > 메뉴 막대에서 JTM을 허용하세요"
+    static var hiddenIconHint: String { L10n.string(.hiddenIconHint) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             if let undo = host.controller.undoNotice {
                 HStack(spacing: 6) {
                     let more = host.controller.pendingIgnores.count - 1
-                    Text("“\(undo.title)”을(를) 무시했어요" + (more > 0 ? " 외 \(more)건" : "")).lineLimit(1).truncationMode(.tail)
+                    Text(more > 0 ? L10n.string(.undoIgnoredMore, undo.title, more) : L10n.string(.undoIgnored, undo.title)).lineLimit(1).truncationMode(.tail)
                     Spacer(minLength: 4)
-                    Button("되돌리기") { host.controller.undoIgnore() }
+                    Button(L10n.string(.undoButton)) { host.controller.undoIgnore() }
                         .buttonStyle(.link)
-                        .help("방금 무시한 티켓을 되살려요 (5초 안에서만)")
+                        .help(L10n.string(.undoHelp))
                 }
             }
             if host.iconHidden {
@@ -436,7 +426,7 @@ struct FooterView: View {
             }
             HStack(spacing: 8) {
                 if let error = host.controller.loadError {
-                    Text("목록을 읽지 못했어요: \(error)").foregroundStyle(.red).lineLimit(1)
+                    Text(L10n.string(.loadError, error)).foregroundStyle(.red).lineLimit(1)
                 } else if let notice = host.controller.footerNotice {
                     Text(notice).foregroundStyle(.secondary)
                 }
@@ -450,20 +440,20 @@ struct FooterView: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(host.controller.showLegend ? Color.accentColor : Color.secondary)
-                .help("아이콘과 상태 설명 보기")
-                .accessibilityLabel("아이콘과 상태 설명")
-                .accessibilityValue(host.controller.showLegend ? "열림" : "닫힘")
+                .help(L10n.string(.legendToggleHelp))
+                .accessibilityLabel(L10n.string(.legendToggleLabel))
+                .accessibilityValue(L10n.string(host.controller.showLegend ? .legendOpen : .legendClosed))
                 Menu {
-                    Toggle("로그인 시 자동 실행", isOn: Binding(
+                    Toggle(L10n.string(.menuLaunchAtLogin), isOn: Binding(
                         get: { host.launchAtLogin }, set: { host.setLaunchAtLogin($0) }))
-                    Button("지금 동기화") { Task { await host.controller.runSync(.manual) } }
+                    Button(L10n.string(.menuSyncNow)) { Task { await host.controller.runSync(.manual) } }
                     if let setup = host.setup {
                         Divider()
-                        Button("CLI·훅 설정…") { setup.show() }
-                        Button("훅 제거") { Task { await setup.removeHooks() } }
+                        Button(L10n.string(.menuSetup)) { setup.show() }
+                        Button(L10n.string(.menuRemoveHooks)) { Task { await setup.removeHooks() } }
                     }
                     Divider()
-                    Button("종료") { host.quit() }
+                    Button(L10n.string(.menuQuit)) { host.quit() }
                         .keyboardShortcut("q", modifiers: .command)
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -471,7 +461,7 @@ struct FooterView: View {
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
                 .fixedSize()
-                .accessibilityLabel("설정 메뉴")
+                .accessibilityLabel(L10n.string(.menuSettings))
             }
         }
         .font(.caption)

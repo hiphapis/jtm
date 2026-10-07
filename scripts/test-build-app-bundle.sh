@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build-app.sh 가 만드는 번들과 배포 묶음(zip, dmg)을 검사한다: 아이콘 키와 .icns, 서명, dmg 내용, 체크섬, 번들 ID 덮어쓰기.
+# build-app.sh 가 만드는 번들과 배포 묶음(zip, dmg)을 검사한다: 아이콘 키와 .icns, 화면 문구(영어/한국어) 리소스, 서명, dmg 내용, 체크섬, 번들 ID 덮어쓰기.
 # 앱은 띄우지도 번들 안의 실행 파일을 실행하지도 않는다. 결과물은 임시 폴더(JTM_DIST_DIR)에만 쓴다.
 #   scripts/test-build-app-bundle.sh
 set -euo pipefail
@@ -33,7 +33,7 @@ echo "2) --dmg needs --release"
 if scripts/build-app.sh --dmg >"$LOG" 2>&1; then fail "--dmg without --release was accepted"; fi
 grep -q "together with --release" "$LOG" || fail "no explanation for --dmg without --release"
 
-echo "3) release build with a bundle id override: icon keys, icns, signature"
+echo "3) release build with a bundle id override: icon keys, icns, localized strings, signature"
 export JTM_BUNDLE_ID="com.example.jtm.bundletest"
 scripts/build-app.sh --release --dmg >"$LOG" 2>&1 || fail "release build failed"
 APP="$ROOT/.build/JTM.app"
@@ -42,6 +42,14 @@ APP="$ROOT/.build/JTM.app"
 [[ "$(plist CFBundleIconName)" == "AppIcon" ]] || fail "CFBundleIconName"
 [[ "$(plist CFBundleShortVersionString)" == "$VERSION" ]] || fail "version in Info.plist"
 cmp -s "$APP/Contents/Resources/AppIcon.icns" "$ICON" || fail "AppIcon.icns in the bundle differs from Resources/AppIcon/AppIcon.icns"
+RES_REL="Contents/Resources/jtm_JTMAppCore.bundle/Contents/Resources"
+for lang in en ko; do
+  [[ -s "$APP/$RES_REL/$lang.lproj/Localizable.strings" ]] || fail "the app lacks $lang.lproj/Localizable.strings (localized strings)"
+done
+[[ "$(plutil -extract sectionWaiting raw "$APP/$RES_REL/en.lproj/Localizable.strings")" == "Waiting for me" ]] || fail "English string table content"
+[[ "$(plutil -extract sectionActive raw "$APP/$RES_REL/ko.lproj/Localizable.strings")" == "진행 중" ]] || fail "Korean string table content"
+[[ "$(plist CFBundleDevelopmentRegion)" == "en" ]] || fail "CFBundleDevelopmentRegion"
+[[ "$(plist CFBundleLocalizations:0)" == "en" && "$(plist CFBundleLocalizations:1)" == "ko" ]] || fail "CFBundleLocalizations must list en and ko"
 codesign --verify --deep --strict "$APP" || fail "app signature"
 codesign --verify --strict "$APP/Contents/Helpers/jtm" || fail "helper signature"
 
@@ -51,6 +59,9 @@ ZIP="$JTM_DIST_DIR/JTM-$VERSION.zip"
 LISTING="$(unzip -Z1 "$ZIP")"
 grep -qx 'JTM.app/Contents/Helpers/jtm' <<<"$LISTING" || fail "zip lacks the helper"
 grep -qx 'JTM.app/Contents/Resources/AppIcon.icns' <<<"$LISTING" || fail "zip lacks the icon"
+for lang in en ko; do
+  grep -qx "JTM.app/$RES_REL/$lang.lproj/Localizable.strings" <<<"$LISTING" || fail "zip lacks the $lang strings"
+done
 (cd "$JTM_DIST_DIR" && shasum -a 256 -c "JTM-$VERSION.zip.sha256" >/dev/null) || fail "zip sha256 does not verify"
 
 echo "5) dmg: UDZO, volume JTM, JTM.app + Applications link, sha256"
@@ -66,7 +77,10 @@ hdiutil attach "$DMG" -quiet -readonly -nobrowse -noautoopen -mountpoint "$MOUNT
 [[ -L "$MOUNT/Applications" && "$(readlink "$MOUNT/Applications")" == "/Applications" ]] || fail "dmg lacks the /Applications link"
 [[ -x "$MOUNT/JTM.app/Contents/Helpers/jtm" ]] || fail "dmg app lacks the helper"
 cmp -s "$MOUNT/JTM.app/Contents/Resources/AppIcon.icns" "$ICON" || fail "dmg app icon differs"
+for lang in en ko; do
+  [[ -s "$MOUNT/JTM.app/$RES_REL/$lang.lproj/Localizable.strings" ]] || fail "dmg app lacks the $lang strings"
+done
 codesign --verify --deep --strict "$MOUNT/JTM.app" || fail "app inside the dmg does not verify"
 hdiutil detach "$MOUNT" -quiet; MOUNT=""
 
-echo "OK: bundle icon, signature, zip, dmg (bundle id override $JTM_BUNDLE_ID)"
+echo "OK: bundle icon, localized strings, signature, zip, dmg (bundle id override $JTM_BUNDLE_ID)"

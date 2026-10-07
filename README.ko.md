@@ -6,7 +6,7 @@
 
 Claude Code, Codex, ChatGPT, 여러 개의 Orca 터미널을 한꺼번에 쓰다 보면 어느 세션이 내 입력을 기다리는지, 그 세션이 어디서 돌고 있는지 잊어버리기 쉽습니다. JTM은 이 모든 것을 메뉴바의 목록 하나로 모아 보여주고, 클릭하면 작업이 진행 중인 곳으로 바로 데려다 줍니다.
 
-![JTM 팝오버](docs/images/screenshot.png)
+![JTM 팝오버](docs/images/screenshot-ko.png)
 
 ## 기능
 
@@ -86,7 +86,7 @@ curl -fsSL https://raw.githubusercontent.com/hiphapis/jtm/main/scripts/uninstall
 
 앱은 항상 `open -a JTM`(또는 Finder, Spotlight, 로그인 항목)으로 실행하세요. 앱 번들 안의 실행 파일을 터미널에서 직접 실행하면 macOS가 메뉴바 항목을 "숨김"으로 기억해서, 이후 실행에서 앱이 바로 종료될 수 있습니다.
 
-> 앱 화면은 현재 **한국어만** 지원합니다. 영어 문구는 아직 없습니다.
+> 앱 화면은 **영어와 한국어**를 지원하고 macOS 언어 설정을 따릅니다. 선호 언어가 한국어인 Mac에서는 한국어, 그 외에는 영어로 보입니다. `jtm` CLI의 도움말과 메시지는 아직 한국어입니다.
 
 ### CLI
 

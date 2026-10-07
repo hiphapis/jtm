@@ -69,7 +69,7 @@ final class AppRuntime {
             host.launchAtLoginError = nil
             if enabled, SMAppService.mainApp.status == .requiresApproval {
                 // ad-hoc 서명 앱은 사용자가 시스템 설정에서 한 번 허용해야 한다.
-                host.launchAtLoginError = "시스템 설정 > 로그인 항목에서 JTM을 허용해 주세요"
+                host.launchAtLoginError = L10n.string(.loginItemNeedsApproval)
                 SMAppService.openSystemSettingsLoginItems()
             }
         } catch {

@@ -47,7 +47,7 @@ private func snapshotWithOneAgent() -> OrcaSnapshot {
     }
 }
 
-@Suite struct SyncWorkerTests {
+@Suite(.korean) struct SyncWorkerTests {
     @Test func aSuccessfulSyncMergesTheSnapshotIntoTheDatabase() async throws {
         try await withTempDB { path in
             let worker = SyncWorker(databasePath: path, fetch: { snapshotWithOneAgent() }, isOrcaRunning: { true })
