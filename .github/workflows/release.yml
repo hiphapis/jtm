@@ -1,6 +1,6 @@
 name: Release
 
-# v* 태그를 push 하면 JTM-<version>.zip 과 .sha256 을 만들어 GitHub Release 로 올린다.
+# v* 태그를 push 하면 JTM-<version>.zip 과 JTM-<version>.dmg, 각각의 .sha256 을 만들어 GitHub Release 로 올린다.
 on:
   push:
     tags: ['v*']
@@ -41,7 +41,7 @@ jobs:
         run: swift test
 
       - name: Build the release bundle
-        run: scripts/build-app.sh --release --version "${{ steps.version.outputs.version }}"
+        run: scripts/build-app.sh --release --dmg --version "${{ steps.version.outputs.version }}"
 
       - name: Installer end to end
         run: scripts/test-install-scripts.sh "dist/JTM-${{ steps.version.outputs.version }}.zip"
@@ -52,5 +52,7 @@ jobs:
           files: |
             dist/JTM-${{ steps.version.outputs.version }}.zip
             dist/JTM-${{ steps.version.outputs.version }}.zip.sha256
+            dist/JTM-${{ steps.version.outputs.version }}.dmg
+            dist/JTM-${{ steps.version.outputs.version }}.dmg.sha256
           generate_release_notes: true
           prerelease: ${{ contains(steps.version.outputs.version, '-') }}

@@ -2,31 +2,40 @@
 # JTM.app을 조립한다: release 빌드 → 번들(앱 + 내장 CLI) → ad-hoc 서명. 결과는 .build/JTM.app.
 #   scripts/build-app.sh                         빌드와 서명까지
 #   scripts/build-app.sh --install               그 뒤 ~/Applications/JTM.app 으로 복사(실행 중이면 먼저 종료)
-#   scripts/build-app.sh --release [--version X.Y.Z]
+#   scripts/build-app.sh --release [--version X.Y.Z] [--dmg]
 #                                                배포 묶음: x86_64+arm64 유니버설로 빌드하고 dist/JTM-<version>.zip 과 .sha256 을 만든다
+#                                                --dmg 를 더하면 dist/JTM-<version>.dmg(JTM.app + Applications 링크)와 .sha256 도 만든다
 # 버전은 저장소 루트의 VERSION 파일이 기준이고 --version 이 있으면 그것이 우선한다(CFBundleShortVersionString).
 # 빌드 번호(CFBundleVersion)는 JTM_BUILD_NUMBER, 없으면 git 커밋 수, 그것도 없으면 1.
 # 앱은 항상 `open`으로만 띄운다. 번들 안의 실행 파일을 터미널에서 직접 실행하지 않는다.
 # 환경 변수(개발/테스트용): JTM_BUNDLE_ID(기본 io.github.hiphapis.jtm), JTM_INSTALL_DIR(기본 ~/Applications),
-#   JTM_ARCHS(공백으로 구분한 빌드 아키텍처. 기본: 개발 빌드는 이 Mac 것만, --release는 "arm64 x86_64")
+#   JTM_ARCHS(공백으로 구분한 빌드 아키텍처. 기본: 개발 빌드는 이 Mac 것만, --release는 "arm64 x86_64"),
+#   JTM_DIST_DIR(--release 결과를 쓰는 곳. 기본 dist), JTM_ICON(앱 아이콘 .icns. 기본 Resources/AppIcon/AppIcon.icns)
 set -euo pipefail
 
 INSTALL=0
 RELEASE=0
+DMG=0
 VERSION_ARG=""
 while (( $# > 0 )); do
   case "$1" in
     --install) INSTALL=1 ;;
     --release) RELEASE=1 ;;
+    --dmg) DMG=1 ;;
     --version)
       [[ $# -ge 2 ]] || { echo "error: --version needs a value" >&2; exit 2; }
       VERSION_ARG="$2"; shift ;;
     --version=*) VERSION_ARG="${1#--version=}" ;;
-    -h|--help) sed -n '2,11p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
   shift
 done
+
+if [[ "$DMG" == 1 && "$RELEASE" == 0 ]]; then
+  echo "error: --dmg is part of the release package; use it together with --release" >&2
+  exit 2
+fi
 
 cd "$(dirname "$0")/.."
 ROOT="$(pwd)"
@@ -36,6 +45,11 @@ APP="$ROOT/.build/JTM.app"
 # AppIdentity.bundleIdentifier 와 같아야 한다(Tests/JTMAppCoreTests/AppIdentityTests 가 확인한다).
 BUNDLE_ID="${JTM_BUNDLE_ID:-io.github.hiphapis.jtm}"
 INSTALL_DIR="${JTM_INSTALL_DIR:-$HOME/Applications}"
+DIST="${JTM_DIST_DIR:-$ROOT/dist}"
+# 앱 아이콘. 없거나 .icns 가 아니면 오래 걸리는 빌드 전에 바로 실패한다(아이콘 없는 앱이 조용히 나가지 않게).
+ICON="${JTM_ICON:-$ROOT/Resources/AppIcon/AppIcon.icns}"
+[[ -f "$ICON" ]] || { echo "error: app icon not found: $ICON" >&2; exit 1; }
+[[ "$(head -c 4 "$ICON")" == "icns" ]] || { echo "error: $ICON is not an .icns file" >&2; exit 1; }
 
 # 버전: --version > VERSION 파일.
 VERSION="$VERSION_ARG"
@@ -69,6 +83,7 @@ cp "$BIN_DIR/JTMApp" "$APP/Contents/MacOS/JTMApp"
 # 내장 CLI. 설치 때 ~/.local/bin/jtm 이 이 파일을 가리키는 심볼릭 링크가 된다.
 cp "$BIN_DIR/jtm" "$APP/Contents/Helpers/jtm"
 chmod 755 "$APP/Contents/MacOS/JTMApp" "$APP/Contents/Helpers/jtm"
+cp "$ICON" "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -77,6 +92,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <dict>
   <key>CFBundleDevelopmentRegion</key><string>en</string>
   <key>CFBundleExecutable</key><string>JTMApp</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
+  <key>CFBundleIconName</key><string>AppIcon</string>
   <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
   <key>CFBundleName</key><string>JTM</string>
@@ -101,7 +118,6 @@ codesign --verify --deep --strict "$APP"
 echo "built $APP"
 
 if [[ "$RELEASE" == 1 ]]; then
-  DIST="$ROOT/dist"
   ZIP="$DIST/JTM-$VERSION.zip"
   mkdir -p "$DIST"
   rm -f "$ZIP" "$ZIP.sha256"
@@ -115,6 +131,49 @@ if [[ "$RELEASE" == 1 ]]; then
     || { echo "error: the zip does not contain JTM.app/Contents/Helpers/jtm" >&2; exit 1; }
   echo "wrote $ZIP"
   echo "wrote $ZIP.sha256 ($(cut -d' ' -f1 "$ZIP.sha256"))"
+fi
+
+# 디스크 이미지: JTM.app + /Applications 링크. 볼륨 아이콘은 SetFile(Xcode 명령줄 도구)이 있을 때만 붙인다.
+if [[ "$DMG" == 1 ]]; then
+  DMG_FILE="$DIST/JTM-$VERSION.dmg"
+  rm -f "$DMG_FILE" "$DMG_FILE.sha256"
+  DMG_WORK="$(mktemp -d "${TMPDIR:-/tmp}/jtm-dmg.XXXXXX")"
+  DMG_MOUNT=""
+  cleanup_dmg() {
+    [[ -z "$DMG_MOUNT" ]] || hdiutil detach "$DMG_MOUNT" -quiet -force >/dev/null 2>&1 || true
+    rm -rf "$DMG_WORK"
+  }
+  trap cleanup_dmg EXIT
+  echo "==> packaging $DMG_FILE"
+  STAGE="$DMG_WORK/stage"
+  mkdir -p "$STAGE"
+  ditto --norsrc --noextattr --noqtn --noacl "$APP" "$STAGE/JTM.app"
+  ln -s /Applications "$STAGE/Applications"
+  cp "$ICON" "$STAGE/.VolumeIcon.icns"
+  hdiutil create -quiet -srcfolder "$STAGE" -volname JTM -fs HFS+ -format UDRW -ov "$DMG_WORK/rw.dmg"
+  if command -v SetFile >/dev/null 2>&1; then
+    DMG_MOUNT="$DMG_WORK/mount"
+    mkdir -p "$DMG_MOUNT"
+    hdiutil attach "$DMG_WORK/rw.dmg" -quiet -nobrowse -noautoopen -mountpoint "$DMG_MOUNT"
+    SetFile -a C "$DMG_MOUNT"  # 볼륨 루트의 .VolumeIcon.icns 를 아이콘으로 쓴다
+    hdiutil detach "$DMG_MOUNT" -quiet
+    DMG_MOUNT=""
+  else
+    echo "note: SetFile not found; the disk image gets no custom volume icon" >&2
+  fi
+  hdiutil convert "$DMG_WORK/rw.dmg" -quiet -format UDZO -imagekey zlib-level=9 -o "$DMG_FILE"
+  hdiutil verify -quiet "$DMG_FILE"
+  (cd "$DIST" && shasum -a 256 "JTM-$VERSION.dmg" > "JTM-$VERSION.dmg.sha256")
+  # 열어서 내용을 확인한다: 앱(내장 CLI 포함)과 Applications 링크가 있어야 한다.
+  DMG_MOUNT="$DMG_WORK/check"
+  mkdir -p "$DMG_MOUNT"
+  hdiutil attach "$DMG_FILE" -quiet -readonly -nobrowse -noautoopen -mountpoint "$DMG_MOUNT"
+  [[ -x "$DMG_MOUNT/JTM.app/Contents/Helpers/jtm" && -f "$DMG_MOUNT/JTM.app/Contents/Resources/AppIcon.icns" && -L "$DMG_MOUNT/Applications" ]] \
+    || { echo "error: the dmg does not contain JTM.app (with the CLI and the icon) and an Applications link" >&2; exit 1; }
+  hdiutil detach "$DMG_MOUNT" -quiet
+  DMG_MOUNT=""
+  echo "wrote $DMG_FILE"
+  echo "wrote $DMG_FILE.sha256 ($(cut -d' ' -f1 "$DMG_FILE.sha256"))"
 fi
 
 # 이 번들 ID의 앱이 떠 있는가(Launch Services 기준. 자동화 권한이 필요 없다).

@@ -20,7 +20,7 @@
 set -euo pipefail
 
 # Paths relative to the repository root. Missing paths are skipped with a note.
-ALLOWLIST="Package.swift Package.resolved VERSION Sources Tests scripts .github README.md README.ko.md LICENSE CONTRIBUTING.md docs/images"
+ALLOWLIST="Package.swift Package.resolved VERSION Sources Tests Resources/AppIcon scripts .github README.md README.ko.md LICENSE CONTRIBUTING.md docs/images"
 PRIVATE_DIR="scripts/public"   # not exported, except its .gitignore, which is exported as /.gitignore
 
 usage() { sed -n '2,5p' "$0"; }

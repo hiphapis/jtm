@@ -33,11 +33,15 @@ curl -fsSL https://raw.githubusercontent.com/hiphapis/jtm/main/scripts/install.s
 
 The script downloads the latest `JTM-<version>.zip` from [GitHub Releases](https://github.com/hiphapis/jtm/releases), installs `JTM.app` into `~/Applications` and links the command line tool at `~/.local/bin/jtm` (the symlink points into the app bundle, at `Contents/Helpers/jtm`; make sure `~/.local/bin` is on your `PATH`). It then asks whether to install the Claude Code / Codex hooks (`[y/N]`; pass `--yes` to skip the question: `curl -fsSL … | sh -s -- --yes`) and opens the app. If you skip the hooks, the app shows a setup card on first run, **"CLI와 훅 설치"** (install CLI and hooks), and you can also run `jtm hooks install` at any time.
 
+### Disk image (.dmg)
+
+Prefer a drag-and-drop install? Each [release](https://github.com/hiphapis/jtm/releases) also has `JTM-<version>.dmg` (with a `.sha256` next to it, check it with `shasum -a 256 -c JTM-<version>.dmg.sha256`). Open it and drag `JTM.app` onto the `Applications` shortcut, then start the app. The dmg only places the app: the app's setup card **"CLI와 훅 설치"** installs the command line tool and the hooks. The `curl` command above stays the recommended way, because it also sets up the command line tool and hooks in one go and avoids the Gatekeeper prompt described next.
+
 ### About Gatekeeper
 
 JTM is signed ad hoc, not with an Apple Developer ID, so macOS blocks an app that was downloaded with a browser. Installing with `curl` as above avoids this because `curl` does not mark the download as quarantined.
 
-If you download the zip in a browser anyway, open the app in one of these ways:
+If you download the zip or the dmg in a browser anyway (the same applies to the app you copy out of the dmg), open the app in one of these ways:
 
 - right-click `JTM.app` and choose **Open**, then confirm; or
 - open **System Settings > Privacy & Security** and click **Open Anyway** next to the JTM message; or
@@ -149,6 +153,7 @@ swift run jtm --help   # the CLI
 
 scripts/build-app.sh             # release build -> .build/JTM.app, ad-hoc signed
 scripts/build-app.sh --install   # ... and copy it to ~/Applications/JTM.app (quits a running JTM first)
+scripts/build-app.sh --release --dmg   # universal build -> dist/JTM-<version>.zip and .dmg, each with a .sha256
 ```
 
 Then start the app with `open ~/Applications/JTM.app`. See [CONTRIBUTING.md](CONTRIBUTING.md) before sending a change.

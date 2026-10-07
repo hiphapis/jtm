@@ -35,6 +35,9 @@ jobs:
       - name: Test
         run: swift test
 
+      - name: Bundle, zip and dmg checks
+        run: scripts/test-build-app-bundle.sh
+
       - name: Shell syntax
         run: |
           for script in scripts/*.sh; do

@@ -33,11 +33,15 @@ curl -fsSL https://raw.githubusercontent.com/hiphapis/jtm/main/scripts/install.s
 
 스크립트는 [GitHub Releases](https://github.com/hiphapis/jtm/releases)에서 최신 `JTM-<version>.zip`을 내려받아 `JTM.app`을 `~/Applications`에 설치하고, CLI를 `~/.local/bin/jtm`에 연결합니다(앱 번들 안의 `Contents/Helpers/jtm`을 가리키는 심볼릭 링크이며, `~/.local/bin`이 `PATH`에 있어야 합니다). 이어서 Claude Code / Codex 훅을 설치할지 묻고(`[y/N]`, 묻지 않고 설치하려면 `curl -fsSL … | sh -s -- --yes`) 앱을 엽니다. 훅을 건너뛰었다면 앱을 처음 열 때 설정 카드 **"CLI와 훅 설치"**가 나타나고, 언제든 `jtm hooks install`로도 설치할 수 있습니다.
 
+### 디스크 이미지(.dmg)
+
+끌어다 놓는 설치를 선호한다면, 각 [릴리스](https://github.com/hiphapis/jtm/releases)에는 `JTM-<version>.dmg`도 있습니다(옆의 `.sha256`으로 `shasum -a 256 -c JTM-<version>.dmg.sha256`처럼 확인할 수 있습니다). 이미지를 열어 `JTM.app`을 `Applications` 바로가기로 끌어다 놓고 앱을 실행하세요. dmg는 앱만 옮겨 둘 뿐이며, CLI와 훅은 앱의 설정 카드 **"CLI와 훅 설치"**가 설치합니다. 위의 `curl` 명령이 여전히 권장하는 방법입니다. CLI와 훅까지 한 번에 설치하고, 바로 다음에 설명하는 Gatekeeper 경고도 피할 수 있기 때문입니다.
+
 ### Gatekeeper에 대해
 
 JTM은 Apple Developer ID가 아니라 임시(ad-hoc) 서명이어서, 브라우저로 내려받은 앱은 macOS가 막습니다. 위처럼 `curl`로 설치하면 내려받은 파일에 격리 표시가 붙지 않아서 이 문제가 없습니다.
 
-그래도 브라우저로 zip을 받았다면 다음 중 하나로 여세요.
+그래도 브라우저로 zip이나 dmg를 받았다면(dmg에서 꺼낸 앱도 마찬가지입니다) 다음 중 하나로 여세요.
 
 - `JTM.app`을 오른쪽 클릭해서 **열기**를 고르고 확인합니다.
 - **시스템 설정 > 개인정보 보호 및 보안**에서 JTM 안내 옆의 **그래도 열기**를 누릅니다.

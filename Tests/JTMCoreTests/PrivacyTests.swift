@@ -87,12 +87,12 @@ private func exportAllowlist() throws -> [String] {
 }
 
 /// 공개 저장소로 나가는 파일 중 이 테스트가 읽는 것: 허용 목록의 코드·스크립트·워크플로·문서.
-/// `Tests/`는 아래의 더 엄격한 검사(한글 포함)가 맡고, `docs/images`는 이진 파일이라 뺀다.
+/// `Tests/`는 아래의 더 엄격한 검사(한글 포함)가 맡고, `docs/images`와 `Resources/AppIcon`은 이진 파일이라 뺀다.
 private func shippedFiles() throws -> [URL] {
     let root = repositoryRoot()
     let keys: [URLResourceKey] = [.isRegularFileKey]
     var files: [URL] = []
-    for entry in try exportAllowlist() where entry != "Tests" && entry != "docs/images" {
+    for entry in try exportAllowlist() where entry != "Tests" && entry != "docs/images" && entry != "Resources/AppIcon" {
         let url = root.appendingPathComponent(entry)
         var isDirectory: ObjCBool = false
         guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) else { continue }
