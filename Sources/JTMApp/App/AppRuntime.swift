@@ -16,6 +16,8 @@ final class AppRuntime {
     private var hotKey: GlobalHotKey?
 
     private init() {
+        // 컨트롤러와 뷰를 만들기 전에 저장된 언어를 L10n에 올린다.
+        let language = LanguagePreference()
         databasePath = AppPaths.databasePath()
         // Orca가 설치돼 있지 않은 Mac에서는 동기화를 조용히 건너뛴다(푸터에 "Orca 연결 안 됨"도 띄우지 않는다).
         let worker = SyncWorker(
@@ -26,7 +28,8 @@ final class AppRuntime {
             sync: { await worker.sync($0) })
         host = MenuHost(
             controller: controller,
-            setup: SetupController(setup: .forBundle(), preferences: UserDefaultsSetupPreferences()))
+            setup: SetupController(setup: .forBundle(), preferences: UserDefaultsSetupPreferences()),
+            language: language)
         host.onQuit = { NSApp.terminate(nil) }
         host.onSetLaunchAtLogin = { [unowned self] in setLaunchAtLogin($0) }
         refreshLaunchAtLogin()

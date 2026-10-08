@@ -7,6 +7,8 @@ public final class MenuHost {
     public let controller: MenuController
     /// 첫 실행 설정 카드(CLI 링크 + 훅). nil이면 이 호스트는 설정을 다루지 않는다.
     public let setup: SetupController?
+    /// 화면 언어 선택(푸터 메뉴). nil이면 이 호스트는 언어를 바꿀 수 없다(진단 도구).
+    public let language: LanguagePreference?
     public var launchAtLogin = false
     public var launchAtLoginError: String?
     /// nil이면 아직 등록 전.
@@ -18,9 +20,10 @@ public final class MenuHost {
     @ObservationIgnored public var onClose: @MainActor () -> Void = {}
     @ObservationIgnored public var onQuit: @MainActor () -> Void = {}
 
-    public init(controller: MenuController, setup: SetupController? = nil) {
+    public init(controller: MenuController, setup: SetupController? = nil, language: LanguagePreference? = nil) {
         self.controller = controller
         self.setup = setup
+        self.language = language
     }
 
     public func setLaunchAtLogin(_ enabled: Bool) { onSetLaunchAtLogin(enabled) }

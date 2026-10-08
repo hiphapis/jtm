@@ -114,6 +114,7 @@
 "menuRemoveHooks" = "훅 제거";
 "menuQuit" = "종료";
 "menuSettings" = "설정 메뉴";
+"languageSystem" = "시스템 설정 따름";
 "syncOrcaUnavailable" = "Orca 연결 안 됨";
 "syncFailed" = "동기화 실패";
 "syncBusy" = "동기화 중…";

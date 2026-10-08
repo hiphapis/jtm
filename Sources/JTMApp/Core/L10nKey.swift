@@ -110,6 +110,7 @@ extension L10n {
         case menuRemoveHooks
         case menuQuit
         case menuSettings
+        case languageSystem
         case syncOrcaUnavailable
         case syncFailed
         case syncBusy

@@ -80,7 +80,7 @@ curl -fsSL https://raw.githubusercontent.com/hiphapis/jtm/main/scripts/uninstall
 
 아이콘을 클릭하거나 <kbd>⌥</kbd><kbd>⌘</kbd><kbd>J</kbd>를 누르세요. 행마다 목적지 아이콘, 제목, 프로젝트, 마지막 활동 후 경과 시간, 다음 할 일이 보입니다. 아이콘이나 버튼에 마우스를 올리면 뜻이 나오고, **?** 버튼을 누르면 범례가 나옵니다.
 
-행 동작은 ⭐(유지), 다음 할 일 편집, 완료, 무시입니다. 단축키는 <kbd>⌘</kbd><kbd>S</kbd> 유지, <kbd>⌘</kbd><kbd>E</kbd> 편집, <kbd>⌘</kbd><kbd>D</kbd> 완료, <kbd>⌘</kbd><kbd>⌫</kbd> 무시, <kbd>⌘</kbd><kbd>R</kbd> 보관함에서 되살리기입니다. 팝오버 아래쪽 메뉴에 *로그인 시 자동 실행*, *지금 동기화*, *종료*가 있습니다.
+행 동작은 ⭐(유지), 다음 할 일 편집, 완료, 무시입니다. 단축키는 <kbd>⌘</kbd><kbd>S</kbd> 유지, <kbd>⌘</kbd><kbd>E</kbd> 편집, <kbd>⌘</kbd><kbd>D</kbd> 완료, <kbd>⌘</kbd><kbd>⌫</kbd> 무시, <kbd>⌘</kbd><kbd>R</kbd> 보관함에서 되살리기입니다. 팝오버 아래쪽 메뉴에 *로그인 시 자동 실행*, *Language / 언어*, *지금 동기화*, *종료*가 있습니다. 화면 언어는 기본적으로 macOS 언어를 따르고, *Language / 언어*에서 *시스템 설정 따름*, *English*, *한국어* 중에서 고르면 앱을 다시 켜지 않아도 바로 바뀌며 선택은 기억됩니다.
 
 로그인 시 자동 실행은 터미널에서도 켜고 끌 수 있습니다: `open -a JTM --args --login-item on` (끄려면 `off`). 이미 실행 중인 앱에는 인자가 전달되지 않으므로 먼저 앱을 종료하세요.
 

@@ -114,6 +114,7 @@
 "menuRemoveHooks" = "Remove hooks";
 "menuQuit" = "Quit";
 "menuSettings" = "Settings menu";
+"languageSystem" = "System (follows macOS)";
 "syncOrcaUnavailable" = "Orca not connected";
 "syncFailed" = "Sync failed";
 "syncBusy" = "Syncing…";

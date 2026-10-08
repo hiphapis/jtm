@@ -33,6 +33,8 @@ public struct MenuContentView: View {
         }
         .frame(width: PopoverMetrics.width, height: height)
         .background { shortcuts }
+        // 언어를 바꾸면 뷰 트리를 새로 만든다: 하위 뷰는 `L10n`을 관찰하지 않으므로 이렇게 해야 모든 문구가 바로 바뀐다.
+        .id(host.language?.choice)
         .onAppear { focusSearch() }
         .onChange(of: controller.focusToken) {
             host.setup?.refresh()  // 열 때마다 파일 상태를 다시 본다(그사이 링크나 훅이 바뀌었을 수 있다)
@@ -446,6 +448,14 @@ struct FooterView: View {
                 Menu {
                     Toggle(L10n.string(.menuLaunchAtLogin), isOn: Binding(
                         get: { host.launchAtLogin }, set: { host.setLaunchAtLogin($0) }))
+                    if let language = host.language {
+                        Menu(LanguageChoice.menuTitle) {
+                            ForEach(LanguageChoice.allCases, id: \.self) { choice in
+                                Toggle(choice.title, isOn: Binding(
+                                    get: { language.choice == choice }, set: { if $0 { language.select(choice) } }))
+                            }
+                        }
+                    }
                     Button(L10n.string(.menuSyncNow)) { Task { await host.controller.runSync(.manual) } }
                     if let setup = host.setup {
                         Divider()

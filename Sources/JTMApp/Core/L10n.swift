@@ -5,6 +5,11 @@ import os
 public enum AppLanguage: String, CaseIterable, Sendable {
     case en, ko
 
+    /// 화면 언어 결정 순서: 사용자가 메뉴에서 고른 언어(`override`) > macOS 선호 언어 목록.
+    public static func resolve(override: AppLanguage?, preferredLanguages: [String]) -> AppLanguage {
+        override ?? resolve(preferredLanguages: preferredLanguages)
+    }
+
     /// 사용자의 선호 언어 목록(`Locale.preferredLanguages` 순서)에서 처음 만나는 지원 언어. 하나도 없으면 영어.
     public static func resolve(preferredLanguages: [String]) -> AppLanguage {
         for identifier in preferredLanguages {
@@ -23,6 +28,7 @@ public enum L10n {
     @TaskLocal public static var language: AppLanguage?
 
     private static let processOverride = OSAllocatedUnfairLock<AppLanguage?>(initialState: nil)
+    private static let storedOverride = OSAllocatedUnfairLock<AppLanguage?>(initialState: nil)
     private static let systemLanguage = AppLanguage.resolve(preferredLanguages: Locale.preferredLanguages)
     private static let tables = OSAllocatedUnfairLock<[AppLanguage: [String: String]]>(initialState: [:])
 
@@ -31,9 +37,15 @@ public enum L10n {
         processOverride.withLock { $0 = language }
     }
 
-    /// 지금 쓰는 언어: 작업 단위 고정 > 프로세스 고정 > 시스템 언어.
+    /// 사용자가 메뉴에서 고른 언어(`LanguagePreference`가 넣는다). nil이면 시스템 언어를 따른다.
+    /// 진단 도구는 이 값을 읽지 않으므로 사용자 설정이 `--lang`이나 스냅샷에 섞이지 않는다.
+    public static func setStoredLanguage(_ language: AppLanguage?) {
+        storedOverride.withLock { $0 = language }
+    }
+
+    /// 지금 쓰는 언어: 작업 단위 고정 > 프로세스 고정(`--lang`) > 사용자가 고른 언어 > 시스템 언어.
     public static var current: AppLanguage {
-        language ?? processOverride.withLock { $0 } ?? systemLanguage
+        language ?? processOverride.withLock { $0 } ?? storedOverride.withLock { $0 } ?? systemLanguage
     }
 
     /// 한 언어의 문구 표(키 → 값). 파일이 없으면 빈 표.

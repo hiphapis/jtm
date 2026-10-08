@@ -70,6 +70,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate, NSWindowDelegate 
     private func observeBadge() {
         withObservationTracking {
             _ = controller.badgeCount
+            _ = host.language?.choice  // 언어를 바꾸면 접근성 문구도 다시 쓴다
         } onChange: { [weak self] in
             Task { @MainActor in
                 self?.updateBadge()

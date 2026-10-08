@@ -80,7 +80,7 @@ curl -fsSL https://raw.githubusercontent.com/hiphapis/jtm/main/scripts/uninstall
 
 Click the icon, or press <kbd>⌥</kbd><kbd>⌘</kbd><kbd>J</kbd>. Each row shows the destination icon, title, project, time since last activity and the next action. Hover over an icon or button for its meaning, or press the **?** button for a legend.
 
-Row actions: star (keep), edit next action, done, ignore. Shortcuts: <kbd>⌘</kbd><kbd>S</kbd> keep, <kbd>⌘</kbd><kbd>E</kbd> edit, <kbd>⌘</kbd><kbd>D</kbd> done, <kbd>⌘</kbd><kbd>⌫</kbd> ignore, <kbd>⌘</kbd><kbd>R</kbd> restore from the archive. The menu at the bottom of the popover has *Start at login*, *Sync now* and *Quit*.
+Row actions: star (keep), edit next action, done, ignore. Shortcuts: <kbd>⌘</kbd><kbd>S</kbd> keep, <kbd>⌘</kbd><kbd>E</kbd> edit, <kbd>⌘</kbd><kbd>D</kbd> done, <kbd>⌘</kbd><kbd>⌫</kbd> ignore, <kbd>⌘</kbd><kbd>R</kbd> restore from the archive. The menu at the bottom of the popover has *Start at login*, *Language / 언어*, *Sync now* and *Quit*. The app follows the macOS language by default; *Language / 언어* switches it between *System (follows macOS)*, *English* and *한국어* right away and remembers the choice.
 
 Start at login can also be switched from a terminal: `open -a JTM --args --login-item on` (or `off`). Quit the app first, because arguments are not passed to a running instance.
 
