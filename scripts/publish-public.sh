@@ -53,7 +53,7 @@ if [[ "$DRY_RUN" == 0 && -n "$(git -C "$TARGET" status --porcelain)" ]]; then
   die "$TARGET has uncommitted changes; commit or discard them first (an export replaces the whole tree)"
 fi
 
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/jtm-publish.XXXXXX")"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/wwi-publish.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 SNAP="$WORK/snapshot"; STAGE="$WORK/export"
 mkdir -p "$SNAP" "$STAGE"

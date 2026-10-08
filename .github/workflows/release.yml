@@ -1,6 +1,6 @@
 name: Release
 
-# v* 태그를 push 하면 JTM-<version>.zip 과 JTM-<version>.dmg, 각각의 .sha256 을 만들어 GitHub Release 로 올린다.
+# v* 태그를 push 하면 WhereWasI-<version>.zip 과 WhereWasI-<version>.dmg, 각각의 .sha256 을 만들어 GitHub Release 로 올린다.
 on:
   push:
     tags: ['v*']
@@ -44,15 +44,15 @@ jobs:
         run: scripts/build-app.sh --release --dmg --version "${{ steps.version.outputs.version }}"
 
       - name: Installer end to end
-        run: scripts/test-install-scripts.sh "dist/JTM-${{ steps.version.outputs.version }}.zip"
+        run: scripts/test-install-scripts.sh "dist/WhereWasI-${{ steps.version.outputs.version }}.zip"
 
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/JTM-${{ steps.version.outputs.version }}.zip
-            dist/JTM-${{ steps.version.outputs.version }}.zip.sha256
-            dist/JTM-${{ steps.version.outputs.version }}.dmg
-            dist/JTM-${{ steps.version.outputs.version }}.dmg.sha256
+            dist/WhereWasI-${{ steps.version.outputs.version }}.zip
+            dist/WhereWasI-${{ steps.version.outputs.version }}.zip.sha256
+            dist/WhereWasI-${{ steps.version.outputs.version }}.dmg
+            dist/WhereWasI-${{ steps.version.outputs.version }}.dmg.sha256
           generate_release_notes: true
           prerelease: ${{ contains(steps.version.outputs.version, '-') }}

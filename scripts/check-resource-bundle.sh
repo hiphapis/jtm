@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SwiftPM 리소스 번들(jtm_JTMAppCore.bundle)에 화면 문구(en, ko)가 다 들어 있는지 확인한다. build-app.sh 가 부르고,
+# SwiftPM 리소스 번들(where-was-i_WWIAppCore.bundle)에 화면 문구(en, ko)가 다 들어 있는지 확인한다. build-app.sh 가 부르고,
 # test-build-app-bundle.sh 가 가짜 번들로 직접 부른다.
 #   scripts/check-resource-bundle.sh <번들 경로>
 # SwiftPM 은 빌드 시스템과 툴체인에 따라 번들 레이아웃이 다르다. 둘 다 받아들이고, 같은 레이아웃 안에 en 과 ko 가 다 있어야 한다.
